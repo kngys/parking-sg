@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './App.css';
 import { fetchDataByName, fetchDataByPostal, fetchDataByID } from './api';
+import CarparkInfo from './CarparkInfo';
 
 function App() {
 
@@ -9,42 +10,42 @@ function App() {
   const [carparkID, setCarparkID] = useState(''); 
   const [data, setData] = useState(null);
   const [carparkRates, setCarparkRates] = useState(null)
-  // useEffect(()=> {
-  //   async function fetchData() {
-  //     if (data != null) {
-  //       const filteredData = data.carparkData.slice(0, 2);
-  //       console.log(filteredData);
-  //       const carparkRateData = await filteredData.map(async carpark => await fetchDataByID(carpark.id));
-  //       console.log(carparkRateData);
-  //     }
-  //   }
-  //   fetchData(); 
-  // }, [data])
+  const [isLoading, setIsLoading] = useState(false); // Loading state
+  
 
   const handleNameSubmit = async (e) => { 
     e.preventDefault(); 
-    setCarparkRates(null);
-    console.log('Fetching data for:', carparkName); // Log input value
+    setCarparkRates(null); // Ensure carparkRates is updated before accessing data
+    setIsLoading(true); // Set loading to true
+    //console.log('Fetching data for:', carparkName); // Log input value
     const result = await fetchDataByName(carparkName); 
     const filteredResult = result.carparkData.slice(0, 5);
-    console.log('API response:', result); // Log API response
+    //console.log('API response:', result); // Log API response
     setData(filteredResult); 
-    console.log('Updated data state:', result); // Log updated state
+    //console.log('Updated data state:', result); // Log updated state
  
     const carparkRateData = await Promise.all(filteredResult.map(carpark => fetchDataByID(carpark.id)))
     setCarparkRates(carparkRateData)
     console.log(carparkRateData);
+    setIsLoading(false); // Set loading to false once data is fetched
   }; 
 
   const handlePostalSubmit = async (e) => { 
-    e.preventDefault(); 
-    const result = await fetchDataByPostal(postalCode); 
-    setData(result); }; 
-  const handleIDSubmit = async (e) => { 
-    e.preventDefault(); 
-    const result = await fetchDataByID(carparkID); 
-    setData(result); };
+    e.preventDefault();
+    setCarparkRates(null); 
+    setIsLoading(true); // Set loading to true
+    console.log('Fetching data for:', postalCode); // Log input value
+    const result = await fetchDataByPostal(postalCode);
+    const filteredResult = result.carparkData.slice(0, 5);
+    console.log('API response:', result); // Log API response 
+    setData(filteredResult); 
+    console.log('Updated data state:', result); // Log updated state
 
+    const carparkRateData = await Promise.all(filteredResult.map(carpark => fetchDataByID(carpark.id)))
+    setCarparkRates(carparkRateData)
+    console.log(carparkRateData);
+    setIsLoading(false); 
+  }; 
 
   return (
     <div className="App">
@@ -63,32 +64,32 @@ function App() {
       </form>
 
       <h2>Search carpark by postal code</h2>
-      <form>
-        <input placeholder="Postal code"></input>
+      <form onSubmit={handlePostalSubmit}>
+        <input 
+          placeholder="Postal code"
+          value={postalCode}
+          onChange={(e) => setPostalCode(e.target.value)}>
+        </input>
         <button>Find carpark</button>
       </form>
 
-      <h2>Find carpark rates by ID</h2>
-      <form>
-        <input placeholder="Carpark ID"></input>
-        <button>Get carpark rate</button>
-      </form>
-
-      {data &&  ( 
-        <div> 
-          <h2>Fetched Data:</h2> 
-            {data.map((carpark, index) => ( 
-              <div key={carpark.id}> 
-                <h3>{carpark.name}</h3> 
-                <p>Road: {carpark.road}</p>
-                <p>Weekday: {carparkRates && carparkRates[index]['data']['data']['wd1']} {carparkRates && carparkRates[index]['data']['data']['wd1'] !== carparkRates[index]['data']['data']['wd2'] && carparkRates[index]['data']['data']['wd2']}</p>
-                <p>Saturday: {carparkRates && carparkRates[index]['data']['data']['sat']}</p> 
-                <p>Sunday: {carparkRates && carparkRates[index]['data']['data']['sun']}</p>
-              </div> 
-            ))} 
-        </div> 
+      {isLoading ? (
+        <div className="loading-message">Loading, please wait...</div>
+      ) : (
+        data && (
+          <div>
+            <h2>Nearest carparks:</h2>
+            {data.map((carpark, index) => (
+              <CarparkInfo 
+                key={carpark.id} 
+                carpark={carpark} 
+                carparkRates={carparkRates} 
+                index={index} 
+              />
+            ))}
+          </div>
+        )
       )}
-
     </div>
   
   );
