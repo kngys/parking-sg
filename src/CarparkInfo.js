@@ -1,6 +1,10 @@
 import React from 'react';
 
 const CarparkInfo = ({ carpark, carparkRates, index }) => {
+
+  const remarks = carparkRates && carparkRates[index]['data']['data']['remarks']; 
+  const isValidRemark = remarks && remarks !== "" && remarks !== "null";
+
   return (
     <div className="carpark-info" key={carpark.id}>
       <h3>{carpark.name}</h3>
@@ -11,7 +15,7 @@ const CarparkInfo = ({ carpark, carparkRates, index }) => {
       <p>Saturday: {carparkRates && carparkRates[index]['data']['data']['sat']}</p>
       <p>Sunday: {carparkRates && carparkRates[index]['data']['data']['sun']}</p>
       <p>
-        {carparkRates && carparkRates[index]['data']['data']['remarks'] !== (null || "") && ` Note: ${carparkRates[index]['data']['data']['remarks']}`}
+        {isValidRemark && <p>Note: {remarks}</p>}
       </p>
       <hr />
     </div>

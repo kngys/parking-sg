@@ -7,7 +7,6 @@ function App() {
 
   const [carparkName, setCarparkName] = useState(''); 
   const [postalCode, setPostalCode] = useState(''); 
-  const [carparkID, setCarparkID] = useState(''); 
   const [data, setData] = useState(null);
   const [carparkRates, setCarparkRates] = useState(null)
   const [isLoading, setIsLoading] = useState(false); // Loading state
